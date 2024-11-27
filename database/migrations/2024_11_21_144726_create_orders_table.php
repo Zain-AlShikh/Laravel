@@ -10,11 +10,11 @@ class CreateOrdersTable extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users'); // ارتباط الطلب بالمستخدم
-            $table->foreignId('product_id')->constrained('products'); // ارتباط الطلب بالمنتج
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // ارتباط الطلب بالمستخدم
+            $table->foreignId('product_id')->constrained('products')->onDelete('cascade'); // ارتباط الطلب بالمنتج
             $table->integer('quantity'); // كمية المنتج في الطلب
             $table->decimal('total_price', 8, 2); // إجمالي السعر
-            $table->enum('status', ['pending', 'shipped', 'delivered', 'cancelled']); // حالة الطلب
+            $table->enum('status', ['pending', 'delivered', 'cancelled']); // حالة الطلب
             $table->timestamps();
         });
     }

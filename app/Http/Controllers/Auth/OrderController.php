@@ -25,46 +25,81 @@ class OrderController extends Controller
 
     public function store(Request $request)
     {
-        // منطق إنشاء الطلب
-        $order = Order::create($request->all());
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'product_id' => 'required|exists:products,id',
+            'quantity' => 'required|integer|min:1',
+        ]);
 
-        // تحديث الكمية بعد إتمام الطلب
-        $product = Product::find($order->product_id);
+        $product = Product::find($request->product_id);
 
-        // تحقق إذا كان المنتج غير موجود
-        if (!$product) {
-            return response()->json(['message' => 'Product not found'], 404);
+        if ($product->quantity < $request->quantity) {
+            return response()->json(['message' => 'Insufficient product quantity'], 400);
         }
 
-        $product->quantity -= $order->quantity; // تقليل الكمية
+        $totalPrice = $product->price * $request->quantity;
+
+        $order = Order::create([
+            'user_id' => $request->user_id,
+            'product_id' => $request->product_id,
+            'quantity' => $request->quantity,
+            'total_price' => $totalPrice,
+            'status' => 'pending',
+        ]);
+
+        // تحديث الكمية في المنتج
+        $product->quantity -= $request->quantity;
         $product->save();
 
         return response()->json($order, 201);
     }
 
+   
+
+
+
+    
     public function destroy(Order $order)
     {
-        // استرجاع الكمية عند إلغاء الطلب
-        $product = Product::find($order->product_id);
-
-        // تحقق إذا كان المنتج موجود
-        if (!$product) {
-            return response()->json(['message' => 'Product not found'], 404);
-        }
-
-        $product->quantity += $order->quantity; // إضافة الكمية مرة أخرى
+        // إعادة الكمية إلى المنتج قبل حذف الطلب
+        $product = $order->product;
+        $product->quantity += $order->quantity;
         $product->save();
 
-        // حذف الطلب
         $order->delete();
 
-        return response()->json(null, 204);
+        return response()->json(['message' => 'Order deleted successfully']);
     }
 
+
+
+    
     public function update(Request $request, Order $order)
-{
-    $order->update($request->all());
-    return response()->json($order);
-}
+    {
+        $request->validate([
+            'quantity' => 'required|integer|min:1',
+            'status' => 'required|in:pending,delivered,cancelled',
+        ]);
+
+        $product = $order->product;
+
+        // تحديث الكمية إذا تغيرت
+        if ($request->quantity != $order->quantity) {
+            $product->quantity += $order->quantity; // إعادة الكمية السابقة
+            if ($product->quantity < $request->quantity) {
+                return response()->json(['message' => 'Insufficient product quantity'], 400);
+            }
+            $product->quantity -= $request->quantity; // تقليل الكمية الجديدة
+            $product->save();
+        }
+
+        $order->update([
+            'quantity' => $request->quantity,
+            'status' => $request->status,
+            'total_price' => $product->price * $request->quantity,
+        ]);
+
+        return response()->json($order);
+    }
 
 }

@@ -35,4 +35,14 @@ return [
         ],
     ],
 
+    'firebase' => [
+        'credentials' => storage_path('app/firebase_credentials.json'), // ملف JSON الخاص ببيانات Firebase
+    ],
+
+    'fcm' => [
+    'server_key' => env('FCM_SERVER_KEY'),
+],
+
+
+
 ];

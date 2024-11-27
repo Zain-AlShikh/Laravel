@@ -11,10 +11,14 @@ class Product extends Model
 
     protected $fillable = ['name', 'description', 'price', 'quantity', 'store_id'];
 
+
+   // في موديل Product
     public function store()
     {
         return $this->belongsTo(Store::class);
     }
+    
+
 
     public function orders()
     {

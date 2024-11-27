@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('location')->nullable(); // الموقع
             $table->string('password'); // كلمة المرور
             $table->rememberToken(); // تذكر المستخدم
+            $table->string('fcm_token')->nullable();
             $table->timestamps(); // التوقيتات (created_at و updated_at)
         });
 
@@ -47,5 +48,8 @@ return new class extends Migration
         Schema::dropIfExists('users');
         Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn('fcm_token');
+        });
     }
 };

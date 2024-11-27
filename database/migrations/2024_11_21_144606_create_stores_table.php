@@ -12,7 +12,6 @@ class CreateStoresTable extends Migration
             $table->id();
             $table->string('name'); // اسم المتجر
             $table->string('location'); // موقع المتجر
-            $table->string('category'); // تصنيف المتجر
             $table->string('image')->nullable(); // صورة المتجر
             $table->timestamps();
         });

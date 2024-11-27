@@ -33,9 +33,9 @@ class LoginRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'phone.required' => 'رقم الهاتف مطلوب.',
-            'phone.regex' => 'يجب أن يكون رقم الهاتف مكونًا من 10 أرقام.',
-            'password.required' => 'كلمة المرور مطلوبة.',
+            'phone.required' => 'The phone number is required.',
+            'phone.regex' => 'The phone number must be 10 digits.',
+            'password.required' => 'The password is required.',
         ];
     }
 }

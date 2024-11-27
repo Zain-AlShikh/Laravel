@@ -33,7 +33,7 @@ class RegisterController extends Controller
     
         // إعادة بيانات المستخدم مع التوكين
         return response()->json([
-            'message' => 'تم التسجيل بنجاح!',
+            'message' => 'Registration successful!',
             'user' => $user,
             'token' => $token,  
         ], 201);
