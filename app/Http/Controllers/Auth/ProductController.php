@@ -21,38 +21,6 @@ class ProductController extends Controller
     }
 
 
-    public function createOrder(Request $request)
-    {
-        $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'product_id' => 'required|exists:products,id',
-            'quantity' => 'required|integer|min:1',
-        ]);
-    
-        $product = Product::find($request->product_id);
-    
-        if ($product->quantity < $request->quantity) {
-            return response()->json(['message' => 'Not enough stock available'], 400);
-        }
-    
-        $total_price = $product->price * $request->quantity;
-    
-        $order = Order::create([
-            'user_id' => $request->user_id,
-            'product_id' => $request->product_id,
-            'quantity' => $request->quantity,
-            'total_price' => $total_price,
-            'status' => 'pending',
-        ]);
-    
-        $product->quantity -= $request->quantity;
-        $product->save();
-    
-        return response()->json(['order' => $order], 201);
-    }
-    
-
-
 
     public function store(Request $request)
     {
@@ -86,35 +54,8 @@ class ProductController extends Controller
     }
     
 
-    public function update(Request $request, Order $order)
-    {
-        if ($order->user_id !== Auth::id()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-    
-        $order->update($request->all());
-    
-        return response()->json($order);
-    }
-    
-    public function destroy(Order $order)
-    {
-        if ($order->user_id !== Auth::id()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-    
-        $product = Product::find($order->product_id);
-    
-        if ($product) {
-            $product->quantity += $order->quantity;
-            $product->save();
-        }
-    
-        $order->delete();
-    
-        return response()->json(null, 204);
-    }
-    
+   
+   
 
 
 
@@ -166,14 +107,11 @@ class ProductController extends Controller
             ->orWhere('description', 'like', "%{$query}%")
             ->get();
 
-        // البحث عن المتاجر بناءً على الاسم  
-        $stores = Store::where('name', 'like', "%{$query}%")
-            ->get();
 
         // إرجاع النتائج كاستجابة JSON
         return response()->json([
             'products' => $products,
-            'stores' => $stores,
+            
         ]);
     }
 

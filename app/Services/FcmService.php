@@ -14,7 +14,7 @@ class FcmService
     {
         // استخدام storage_path لتحميل الملف من المسار داخل مجلد التخزين
         $firebase = (new Factory)
-        ->withServiceAccount(storage_path('app/firebase_credentials.json'));
+        ->withServiceAccount(storage_path('app/firebase/firebase_credentials.json'));
     
     
 

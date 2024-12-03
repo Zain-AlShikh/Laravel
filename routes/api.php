@@ -2,64 +2,38 @@
 
 use App\Http\Controllers\Auth\CartController;
 use App\Http\Controllers\Auth\LoginController;
-
 use App\Http\Controllers\Auth\RegisterController;
-
 use App\Http\Controllers\Auth\StoreController;
 use App\Http\Controllers\Auth\ProductController;
 use App\Http\Controllers\Auth\OrderController;
 
-
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-// المسار المحمي
-// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-//     return $request->user();
-// });
-
-
+// مسارات غير محمية (التسجيل والدخول)
 Route::post('/register', [RegisterController::class, 'register']);
 Route::post('/login', [LoginController::class, 'login']);
 
-
-
+// المسارات المحمية بمصادقة Sanctum
 Route::middleware('auth:sanctum')->group(function () {
 
-   
-
-    //إضافة المتاجر//
-
+    // مسارات المتاجر
     Route::post('/stores', [StoreController::class, 'store']);
-
-
-
-
     Route::get('/stores', [StoreController::class, 'index']);
-
     Route::get('/stores/{store}', [StoreController::class, 'show']);
+    Route::post('/stores/search', [StoreController::class, 'search']);
 
-    Route::get('/stores/search', [StoreController::class, 'search']);
-
-    //عرض المنتجات والمتاجر
+    // مسارات المنتجات
     Route::get('/products', [ProductController::class, 'index']);
-
-
-    //إضافة المنتجات لمتجر//
     Route::post('/products', [ProductController::class, 'store']);
-
-
     Route::get('/products/{product}', [ProductController::class, 'show']);
-    Route::get('/search', [ProductController::class, 'search']);
+    Route::post('/products/search', [ProductController::class, 'search']);
 
-    Route::get('/cart', [CartController::class, 'index']);
-    Route::post('/cart', [CartController::class, 'store']);
-    Route::delete('/cart/{cart}', [CartController::class, 'destroy']);
+    // مسارات السلة (Cart)
+    Route::get('/cart', [CartController::class, 'index']); // عرض محتويات السلة
+    Route::post('/cart', [CartController::class, 'store']); // إضافة عنصر للسلة
+    Route::put('/cart/{cart}', [CartController::class, 'update']); // تعديل عنصر في السلة
+    Route::delete('/cart/{cart}', [CartController::class, 'destroy']); // حذف عنصر من السلة
 
-    Route::get('/orders', [OrderController::class, 'index']);
-    Route::post('/orders', [OrderController::class, 'store']);
-    Route::put('/orders/{order}', [OrderController::class, 'update']);
-
-    Route::delete('/orders/{order}', [OrderController::class, 'destroy']);
-
+    
 });

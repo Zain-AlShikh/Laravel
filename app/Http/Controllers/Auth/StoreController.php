@@ -1,19 +1,23 @@
 <?php
 
 namespace App\Http\Controllers\Auth;
+
 use App\Models\Product;
 use App\Models\Store;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
+
 class StoreController extends Controller
 {
     public function store(Request $request)
     {
         try {
+            // التحقق من البيانات المرسلة
             $request->validate([
                 'name' => 'required|string|max:255',
                 'location' => 'required|string|max:255',
-                'image' => 'nullable|image|max:2048',
+                'image' => 'nullable|image|max:2048', // التحقق من نوع الصورة
             ]);
     
             // التحقق من وجود متجر بنفس الاسم والموقع
@@ -27,53 +31,66 @@ class StoreController extends Controller
                 ], 409); // رمز HTTP 409 يشير إلى وجود تضارب
             }
     
-            // إنشاء المتجر الجديد
+            // رفع الصورة إذا كانت موجودة
+            $imagePath = $request->file('image') ? $request->file('image')->store('stores') : null;
+    
+            // إنشاء المتجر وتخزينه في قاعدة البيانات
             $store = Store::create([
                 'name' => $request->name,
                 'location' => $request->location,
-                'image' => $request->file('image') ? $request->file('image')->store('stores') : null,
+                'image' => $imagePath,
             ]);
-    
+
+            // إذا كانت الصورة موجودة، نرجع رابط الصورة
+            if ($store->image) {
+                $store->image = Storage::url($store->image); // إرجاع الرابط الكامل للصورة
+            }
+
             return response()->json(['store' => $store, 'message' => 'Store created successfully'], 201);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 400);
         }
     }
-    
-    
-
-
-
 
     public function index()
     {
-        return Store::all(); // إرجاع جميع المتاجر
+        $stores = Store::all();
+        // إرجاع المتاجر مع روابط الصور
+        foreach ($stores as $store) {
+            if ($store->image) {
+                $store->image = Storage::url($store->image); // إرجاع رابط الصورة إذا كانت موجودة
+            }
+        }
+        return response()->json($stores); // إرجاع جميع المتاجر مع رابط الصورة
     }
 
     public function show(Store $store)
     {
-        return $store; // إرجاع متجر واحد
+        if ($store->image) {
+            $store->image = Storage::url($store->image); // إرجاع رابط الصورة إذا كانت موجودة
+        }
+        return response()->json($store); // إرجاع متجر واحد مع رابط الصورة
     }
 
-
     public function search(Request $request)
-{
-    $query = $request->input('query'); // استلام الكلمة المفتاحية من المستخدم
+    {
+        $query = $request->input('query'); // استلام الكلمة المفتاحية من المستخدم
 
-    // البحث عن المنتجات بناءً على الاسم أو الوصف
-    $products = Product::where('name', 'like', "%{$query}%")
-        ->orWhere('description', 'like', "%{$query}%")
-        ->get();
 
-    // البحث عن المتاجر بناءً على الاسم  
-    $stores = Store::where('name', 'like', "%{$query}%")
-        ->get();
+        // البحث عن المتاجر بناءً على الاسم  
+        $stores = Store::where('name', 'like', "%{$query}%")
+            ->get();
 
-    // إرجاع النتائج كاستجابة JSON
-    return response()->json([
-        'products' => $products,
-        'stores' => $stores,
-    ]);
-}
+        // إرجاع النتائج كاستجابة JSON مع رابط الصورة للمتاجر
+        foreach ($stores as $store) {
+            if ($store->image) {
+                $store->image = Storage::url($store->image); // إرجاع رابط الصورة للمتاجر
+            }
+        }
 
+        // إرجاع المنتجات والمتاجر
+        return response()->json([
+            'stores' => $stores,
+        ]);
+    }
 }

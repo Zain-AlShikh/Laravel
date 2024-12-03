@@ -11,19 +11,18 @@ class LoginRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true; // السماح بتنفيذ الطلب
+        return true;
     }
 
     /**
      * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
             'phone' => 'required|regex:/^[0-9]{10}$/',
             'password' => 'required|string',
+            // 'fcm_token' => 'required|string',
         ];
     }
 
@@ -36,6 +35,7 @@ class LoginRequest extends FormRequest
             'phone.required' => 'The phone number is required.',
             'phone.regex' => 'The phone number must be 10 digits.',
             'password.required' => 'The password is required.',
+            // 'fcm_token.required' => 'The FCM token is required.',
         ];
     }
 }

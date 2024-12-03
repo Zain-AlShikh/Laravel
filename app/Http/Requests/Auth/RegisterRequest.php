@@ -16,8 +16,6 @@ class RegisterRequest extends FormRequest
 
     /**
      * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
@@ -28,9 +26,13 @@ class RegisterRequest extends FormRequest
             'password' => 'required|string|min:8|confirmed',
             'location' => 'required|string|max:255',
             'profile_image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+            // 'fcm_token' => 'required|string',
         ];
     }
 
+    /**
+     * Get custom error messages for validation rules.
+     */
     public function messages(): array
     {
         return [
@@ -46,6 +48,7 @@ class RegisterRequest extends FormRequest
             'profile_image.image' => 'The file must be an image.',
             'profile_image.mimes' => 'Supported image formats are: jpg, jpeg, png, gif.',
             'profile_image.max' => 'The image size must not exceed 2MB.',
+            // 'fcm_token.required' => 'The FCM token is required.',
         ];
     }
 }
