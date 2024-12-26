@@ -2,33 +2,21 @@
 
 return [
 
-    /*
-    |--------------------------------------------------------------------------
-    | Cross-Origin Resource Sharing (CORS) Configuration
-    |--------------------------------------------------------------------------
-    |
-    | Here you may configure your settings for cross-origin resource sharing
-    | or "CORS". This determines what cross-origin operations may execute
-    | in web browsers. You are free to adjust these settings as needed.
-    |
-    | To learn more: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
-    |
-    */
+    'paths' => ['api/*'], // السماح فقط بمسارات API
 
-    'paths' => ['*'],
+    'allowed_methods' => ['*'], // السماح بجميع أنواع الطلبات (GET, POST, PUT, DELETE)
 
-    'allowed_methods' => ['*'],
+    'allowed_origins' => ['*'], // السماح بجميع الأصول (Flutter يستخدم عناوين IP متغيرة)
 
-    'allowed_origins' => [env('FRONTEND_URL', 'http://localhost:3000')],
+    'allowed_origins_patterns' => [], // تركه فارغًا إذا كنت تستخدم 'allowed_origins'
 
-    'allowed_origins_patterns' => [],
+    'allowed_headers' => ['*'], // السماح بجميع الرؤوس
 
-    'allowed_headers' => ['*'],
+    'exposed_headers' => [], // لا حاجة لرؤوس مكشوفة إلا إذا كنت تريد ذلك
 
-    'exposed_headers' => [],
+    'max_age' => 0, // العمر الأقصى للطلبات
 
-    'max_age' => 0,
-
-    'supports_credentials' => true,
+    'supports_credentials' => false, // تعطيل المصادقة عبر الجلسات أو الكوكيز إذا لم تكن ضرورية
 
 ];
+

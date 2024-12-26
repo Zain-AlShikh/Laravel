@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
-
+use Illuminate\Http\Request;
 class LoginController extends Controller
 {
     public function login(LoginRequest $request)
@@ -28,6 +28,17 @@ class LoginController extends Controller
             'message' => 'Login successful!',
             'user' => $user,
             'token' => $token,
+        ], 200);
+    }
+
+    // إضافة تابع لتسجيل الخروج
+    public function logout(Request $request)
+    {
+        // إبطال التوكن المستخدم
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json([
+            'message' => 'Logout successful!',
         ], 200);
     }
 }

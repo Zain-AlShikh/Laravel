@@ -7,15 +7,20 @@ use App\Http\Controllers\Auth\StoreController;
 use App\Http\Controllers\Auth\ProductController;
 use App\Http\Controllers\Auth\OrderController;
 
-use Illuminate\Http\Request;
+
 use Illuminate\Support\Facades\Route;
 
-// مسارات غير محمية (التسجيل والدخول)
+// (التسجيل والدخول)
 Route::post('/register', [RegisterController::class, 'register']);
 Route::post('/login', [LoginController::class, 'login']);
 
 // المسارات المحمية بمصادقة Sanctum
 Route::middleware('auth:sanctum')->group(function () {
+
+// مسار تسجيل الخروج
+Route::post('/logout', [LoginController::class, 'logout']);
+
+
 
     // مسارات المتاجر
     Route::post('/stores', [StoreController::class, 'store']);
@@ -23,11 +28,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/stores/{store}', [StoreController::class, 'show']);
     Route::post('/stores/search', [StoreController::class, 'search']);
 
+
+
     // مسارات المنتجات
     Route::get('/products', [ProductController::class, 'index']);
     Route::post('/products', [ProductController::class, 'store']);
     Route::get('/products/{product}', [ProductController::class, 'show']);
     Route::post('/products/search', [ProductController::class, 'search']);
+
+
 
     // مسارات السلة (Cart)
     Route::get('/cart', [CartController::class, 'index']); // عرض محتويات السلة

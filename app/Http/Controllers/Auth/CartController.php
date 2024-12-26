@@ -24,7 +24,7 @@ class CartController extends Controller
 
         return response()->json([
             'carts' => $carts,
-            'total_price' => $totalPrice,
+            'total_price' => $totalPrice . "$",
         ]);
     }
 
@@ -36,6 +36,7 @@ class CartController extends Controller
             'quantity' => 'required|integer|min:1',
         ]);
 
+        
         $userId = Auth::id();
         $product = Product::find($request->product_id);
 

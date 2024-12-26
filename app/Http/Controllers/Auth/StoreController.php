@@ -7,7 +7,7 @@ use App\Models\Store;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
-
+use Illuminate\Support\Str;
 class StoreController extends Controller
 {
     public function store(Request $request)
@@ -17,7 +17,7 @@ class StoreController extends Controller
             $request->validate([
                 'name' => 'required|string|max:255',
                 'location' => 'required|string|max:255',
-                'image' => 'nullable|image|max:2048', // التحقق من نوع الصورة
+                'image' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg', // إضافة نوع الملف وحجم الصورة المسموح به
             ]);
     
             // التحقق من وجود متجر بنفس الاسم والموقع
@@ -31,45 +31,47 @@ class StoreController extends Controller
                 ], 409); // رمز HTTP 409 يشير إلى وجود تضارب
             }
     
-            // رفع الصورة إذا كانت موجودة
-            $imagePath = $request->file('image') ? $request->file('image')->store('stores') : null;
+            // إذا كانت الصورة موجودة
+            $imagePath = null;
+            if ($request->hasFile('image')) {
+                // تخزين الصورة في مجلد 'stores' داخل storage/app/public
+                $imagePath = $request->file('image')->store('stores', 'public'); // تخزين الصورة في مجلد 'stores' داخل storage/app/public
+            }
     
-            // إنشاء المتجر وتخزينه في قاعدة البيانات
+            // إنشاء المتجر
             $store = Store::create([
                 'name' => $request->name,
                 'location' => $request->location,
                 'image' => $imagePath,
             ]);
-
-            // إذا كانت الصورة موجودة، نرجع رابط الصورة
-            if ($store->image) {
-                $store->image = Storage::url($store->image); // إرجاع الرابط الكامل للصورة
-            }
-
+    
             return response()->json(['store' => $store, 'message' => 'Store created successfully'], 201);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 400);
         }
     }
 
+
+
     public function index()
     {
         $stores = Store::all();
-        // إرجاع المتاجر مع روابط الصور
+       
         foreach ($stores as $store) {
             if ($store->image) {
-                $store->image = Storage::url($store->image); // إرجاع رابط الصورة إذا كانت موجودة
+                $store->image = asset('storage/' . $store->image);  // إرجاع رابط الصورة إذا كانت موجودة
             }
         }
-        return response()->json($stores); // إرجاع جميع المتاجر مع رابط الصورة
+        return response()->json($stores); 
     }
 
     public function show(Store $store)
     {
+     
         if ($store->image) {
-            $store->image = Storage::url($store->image); // إرجاع رابط الصورة إذا كانت موجودة
+            $store->image = asset('storage/' . $store->image); // توليد رابط URL للصورة
         }
-        return response()->json($store); // إرجاع متجر واحد مع رابط الصورة
+        return response()->json($store); // إرجاع بيانات المتجر مع رابط الصورة
     }
 
     public function search(Request $request)

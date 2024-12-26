@@ -41,7 +41,7 @@ class ProductController extends Controller
             $product = Product::create([
                 'name' => $request->name,
                 'description' => $request->description,
-                'price' => $request->price,
+                'price' => $request->price . "$",
                 'quantity' => $request->quantity,
                 'store_id' => $store->id,
             ]);
@@ -123,7 +123,7 @@ class ProductController extends Controller
 {
     $user = Auth::user();
 
-    if (!$user || !$user->fcm_token) {
+    if (!$user  ||  !$user->fcm_token) {
         return response()->json(['message' => 'No valid FCM token found'], 400);
     }
 
