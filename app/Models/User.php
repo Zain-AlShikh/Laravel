@@ -73,4 +73,12 @@ class User extends Authenticatable
     {
         return Storage::url($this->profile_image);
     }
+
+
+
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
 }

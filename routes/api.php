@@ -7,12 +7,14 @@ use App\Http\Controllers\Auth\StoreController;
 use App\Http\Controllers\Auth\ProductController;
 use App\Http\Controllers\Auth\OrderController;
 
-
 use Illuminate\Support\Facades\Route;
 
 // (التسجيل والدخول)
 Route::post('/register', [RegisterController::class, 'register']);
-Route::post('/login', [LoginController::class, 'login']);
+Route::post('/login',    [LoginController::class, 'login']);
+
+
+Route::post('/driverLogin', [LoginController::class, 'driverLogin']);
 
 // المسارات المحمية بمصادقة Sanctum
 Route::middleware('auth:sanctum')->group(function () {
@@ -44,5 +46,11 @@ Route::post('/logout', [LoginController::class, 'logout']);
     Route::put('/cart/{cart}', [CartController::class, 'update']); // تعديل عنصر في السلة
     Route::delete('/cart/{cart}', [CartController::class, 'destroy']); // حذف عنصر من السلة
 
+
     
+     Route::post('/orders', [OrderController::class, 'store']);
+     Route::post('/add-order', [CartController::class, 'storeOrder']);
+     Route::get('/orders', [CartController::class, 'getAllOrders']);
+
+
 });

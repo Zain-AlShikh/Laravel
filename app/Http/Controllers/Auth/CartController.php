@@ -8,25 +8,31 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Cart;
 use App\Models\Product;
-
+use Illuminate\Support\Facades\DB;
 class CartController extends Controller
 {
     // عرض جميع العناصر في السلة
     public function index()
     {
-        $userId = Auth::id();
+        
+    $carts = DB::table('carts')->select('id', 'user_id', 'product_id', 'quantity', 'created_at', 'updated_at')->get();
 
-        // إرجاع جميع العناصر في السلة مع تفاصيل المنتج
-        $carts = Cart::where('user_id', $userId)->with('product')->get();
+    // حساب المجموع الكلي للأسعار
+    $totalPrice = DB::table('carts')
+        ->join('products', 'carts.product_id', '=', 'products.id')
+        ->select(DB::raw('SUM(products.price * carts.quantity) as total_price'))
+        ->value('total_price');
 
-        // حساب السعر الإجمالي
-        $totalPrice = $this->calculateTotalPrice($carts);
+ 
+    $formattedTotalPrice = number_format($totalPrice, 2) . '$';
 
-        return response()->json([
-            'carts' => $carts,
-            'total_price' => $totalPrice . "$",
-        ]);
+    
+    return response()->json([
+        'carts' => $carts,
+        'total_price' => $formattedTotalPrice,
+    ]);
     }
+    
 
     // إضافة عنصر جديد إلى السلة
     public function store(Request $request)
@@ -138,15 +144,92 @@ public function destroy(Cart $cart)
     }
 
     // حساب السعر الإجمالي للمنتجات في السلة
-    private function calculateTotalPrice($carts)
+    private function calculateTotalPrice($userId)
     {
-        $totalPrice = 0;
-
-        foreach ($carts as $cart) {
-            $productPrice = $cart->product->price ?? 0;
-            $totalPrice += $productPrice * $cart->quantity;
-        }
+        $totalPrice = DB::table('carts')
+            ->join('products', 'carts.product_id', '=', 'products.id')
+            ->where('carts.user_id', $userId)
+            ->select(DB::raw('SUM(products.price * carts.quantity) as total_price'))
+            ->value('total_price');
 
         return $totalPrice;
     }
+
+
+
+    // التابع الذي يحفظ الطلب في جدول 'orders'
+    public function storeOrder(Request $request)
+    {
+        // تأكد من أن المستخدم قد سجل الدخول
+        if (Auth::guest()) {
+            return response()->json(['error' => 'User not authenticated'], 401);
+        }
+        
+        // حساب المجموع الكلي للأسعار من السلة
+        $totalPrice = DB::table('carts')
+            ->join('products', 'carts.product_id', '=', 'products.id')
+            ->select(DB::raw('SUM(products.price * carts.quantity) as total_price'))
+            ->where('carts.user_id', Auth::id()) // التأكد من أن السلة تخص المستخدم
+            ->value('total_price');
+    
+        // إذا كان هناك خطأ في الحساب أو السلة فارغة
+        if ($totalPrice === null) {
+            return response()->json(['error' => 'No items in cart'], 400);
+        }
+    
+        // تنسيق السعر النهائي بدون الفواصل
+        $formattedTotalPrice = number_format($totalPrice, 2, '.', ''); // لا نضيف الفواصل
+    
+        // جلب الموقع من جدول users باستخدام id المستخدم
+        $user = Auth::user();
+        $location = $user->location; // تأكد من أن العمود location موجود في جدول users
+        
+        if (!$location) {
+            return response()->json(['error' => 'Location not found'], 400);
+        }
+    
+        // إضافة طلب جديد في جدول orders
+        DB::table('orders')->insert([
+            'user_id' => Auth::id(), // أو استخدم طريقة أخرى للحصول على ID المستخدم
+            'location' => $location, // استخدام الموقع من جدول users
+            'final_price' => $formattedTotalPrice, // تخزين السعر النهائي
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    
+        // إرجاع استجابة تحتوي على البيانات
+        return response()->json([
+            'message' => 'Order placed successfully',
+            'total_price' => $formattedTotalPrice . '$', // إضافة رمز الدولار هنا عند الإرجاع
+        ]);
+    }
+    
+    
+
+
+
+
+// جلب جميع الطلبات من جدول orders
+public function getAllOrders()
+{
+    // جلب الطلبات من جدول orders مع ترتيبها تنازليًا بناءً على وقت الإنشاء
+    $orders = DB::table('orders')
+        ->select('id', 'user_id', 'location', 'final_price', 'created_at', 'updated_at')
+        ->orderBy('created_at', 'desc')
+        ->get();
+
+    // التحقق إذا كان جدول الطلبات فارغًا
+    if ($orders->isEmpty()) {
+        return response()->json(['message' => 'No orders found'], 404);
+    }
+
+    // إرجاع الطلبات في استجابة JSON
+    return response()->json([
+        'message' => 'Orders retrieved successfully',
+        'orders' => $orders,
+    ], 200);
 }
+
+}
+
+

@@ -56,13 +56,12 @@ class StoreController extends Controller
     public function index()
     {
         $stores = Store::all();
-       
         foreach ($stores as $store) {
             if ($store->image) {
                 $store->image = asset('storage/' . $store->image);  // إرجاع رابط الصورة إذا كانت موجودة
             }
         }
-        return response()->json($stores); 
+        return response()->json(['stores' => $stores]); 
     }
 
     public function show(Store $store)
@@ -71,7 +70,7 @@ class StoreController extends Controller
         if ($store->image) {
             $store->image = asset('storage/' . $store->image); // توليد رابط URL للصورة
         }
-        return response()->json($store); // إرجاع بيانات المتجر مع رابط الصورة
+        return response()->json(['store' => $store] ); // إرجاع بيانات المتجر مع رابط الصورة
     }
 
     public function search(Request $request)

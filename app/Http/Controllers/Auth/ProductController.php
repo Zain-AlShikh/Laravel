@@ -87,14 +87,19 @@ class ProductController extends Controller
 
     public function index()
     {
+        $products = Product::all();
+        foreach ( $products as  $product){
+            $product->price =  $product->price . "$";
+        }
         // إرجاع قائمة المنتجات مع تفاصيل المتجر
-        return Product::with('store')->get();
+        return response()->json(['Products' =>  $products]); 
     }
 
     public function show(Product $product)
     {
+        
         // إرجاع منتج واحد مع تفاصيل المتجر
-        return $product->load('store');
+        return $product->load(['product' => 'store'] );
     }
 
 
